@@ -45,4 +45,4 @@ Navigate to Session  --> Set Working Directory --> To Source File Location
 Select Run App or combination of keys 1) Ctrl+A; 2) Ctrl+ENTER/RETURN
 
 Result should look like this.
-![](screenshot.png)
+![](screenshot.PNG)
