@@ -26,19 +26,19 @@ Download and open app.R
 If packages are missing:
 Packages can be installed using default function install.packages ("package name")
 List of required packages is following:
- shiny
- leaflet
- RColorBrewer
- ggmap
- rmapshaper
- clipr
- e1071
- gridExtra
- labeling
- plogr
- readr
- reshape2
- viridisLite
+ shiny,
+ leaflet,
+ RColorBrewer,
+ ggmap,
+ rmapshaper,
+ clipr,
+ e1071,
+ gridExtra,
+ labeling,
+ plogr,
+ readr,
+ reshape2,
+ viridisLite,
  xfun
 
 Navigate to Session  --> Set Working Directory --> To Source File Location
