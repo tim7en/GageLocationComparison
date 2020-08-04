@@ -1,4 +1,4 @@
-# Project name GageLocationComparison
+# Project: GageLocationComparison (GLC)
 Project aims to compare available US gage data and locations for the nation.
 It uses NLDI, NHDPLUS, NWIS, GAGES & StreamStats data.
 Application is delivered with Rstudio & Shiny framework on shinyapps.io 
@@ -45,4 +45,4 @@ Navigate to Session  --> Set Working Directory --> To Source File Location
 Select Run App or combination of keys 1) Ctrl+A; 2) Ctrl+ENTER/RETURN
 
 Result should look like this.
-![](screenshot.PNG)
+![](https://drive.google.com/uc?export=view&id=1Sd3Se10MmMovm4cpf-CI4t6XrT4h3ZVe)
