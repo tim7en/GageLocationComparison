@@ -88,8 +88,8 @@ ui <- bootstrapPage(
   absolutePanel(id  = "controls", top = 30, right = 10, bottom = "auto",
                 class = "panel panel-default",
                 draggable = T,
-                sliderInput("range", "Class", min(datas$class), max(datas$class),
-                            value = c(4,5), step = 1
+                sliderInput("range", "Class",
+                            value = c(4,5), min = 1, max = 6, step = 1
                 ),
                 selectInput("colors", "Color Scheme",
                             rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
