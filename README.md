@@ -21,10 +21,10 @@ To run it locally user has to have installed R & Rstudio https://rstudio.com/ co
 
 ## How to use
 To run locally.
-Download and open app.R
+Download and open app.R in Rstudio.
 
 If packages are missing:
-Packages can be installed using default function install.packages ("package name")
+Packages can be installed using default function install.packages ("package name").
 List of required packages is following:
  shiny,
  leaflet,
@@ -39,7 +39,7 @@ List of required packages is following:
  readr,
  reshape2,
  viridisLite,
- xfun
+ xfun.
 
 Navigate to Session  --> Set Working Directory --> To Source File Location
 Select Run App or combination of keys 1) Ctrl+A; 2) Ctrl+ENTER/RETURN
