@@ -45,4 +45,4 @@ Navigate to Session  --> Set Working Directory --> To Source File Location
 Select Run App or combination of keys 1) Ctrl+A; 2) Ctrl+ENTER/RETURN
 
 Result should look like this.
-![](https://drive.google.com/uc?export=view&id=1Sd3Se10MmMovm4cpf-CI4t6XrT4h3ZVe)
+![](screenshot.PNG)
