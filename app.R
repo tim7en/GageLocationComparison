@@ -3,6 +3,7 @@ library (leaflet)
 library (RColorBrewer)
 library (ggmap)
 library (rmapshaper)
+#library (foreign)
 library (clipr)
 library (e1071)
 library (gridExtra)
@@ -82,15 +83,18 @@ datas$ds <- as.numeric (datas$ds)
 ui <- bootstrapPage(
   tags$style(type = "text/css", 
              "html, body {width:100%;height:100%}",
-             ),
+  ),
   tags$head (includeCSS("style.css")),
   leafletOutput("map", width = "100%", height = "100%"),
   absolutePanel(id  = "controls", top = 30, right = 10, bottom = "auto",
                 class = "panel panel-default",
                 draggable = T,
-                sliderInput("range", "Class",
-                            value = c(4,5), min = 1, max = 6, step = 1
-                ),
+                br(),
+                "Specify class ranges",
+                br(),
+                br(),
+                numericInput("lef", "Range 1:", 4, min = 1, max = 10),
+                numericInput("righ", "Range 2:", 4, min = 1, max = 10),
                 selectInput("colors", "Color Scheme",
                             rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
                 ),
@@ -112,7 +116,7 @@ server <- function(input, output, session) {
     } else {
       dat <- datas
     }
-    dat <- dat[dat$class >= input$range[1] & dat$class <= input$range[2],]
+    dat <- dat[dat$class >= input$lef & dat$class <= input$righ,]
     dat
   })
   
@@ -163,7 +167,7 @@ server <- function(input, output, session) {
     leafletProxy("map", data = filteredData()) %>%
       clearMarkers() %>%
       addCircleMarkers(radius = ~10, weight = 1, color = "#777777", opacity = 0.5,
-                 fillColor = ~pal(ds), fillOpacity = 0.7, popup = ~paste(id)
+                       fillColor = ~pal(ds), fillOpacity = 0.7, popup = ~paste(id)
       )
   })
   
