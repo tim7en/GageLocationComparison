@@ -13,9 +13,12 @@ library (readr)
 library (reshape2)
 library (viridisLite)
 library (xfun)
+library (shinyWidgets)
 
 ################
 datas <- read.csv ("datas.csv", stringsAsFactors = F)
+datas$numid <- datas$id
+states <- read.csv ("states.csv", stringsAsFactors = F)
 datas <- datas[-c(which(datas$state %in% c("HI", "PR", "GM", "GU", "AK"))),]
 datas$dif_area_g3 <- abs(datas$area_nav - datas$area_g3)
 datas$dif_area_nwis <- abs (datas$area_nav - (datas$area_nwis*2.58999))
@@ -34,19 +37,19 @@ classify_gages <- function (x, y){
 ################
 
 ################
-datas_nldi <- data.frame (id = datas$id, lat = datas$lat_ss, long = datas$long_ss, proxy = datas$nldi_proxy, ds = "Nldi", state = datas$state, active = datas$active)
+datas_nldi <- data.frame (id = datas$id, lat = datas$lat_ss, long = datas$long_ss, proxy = datas$nldi_proxy, ds = "Nldi", state = datas$state, active = datas$active, numid = datas$numid)
 datas_nldi <- classify_gages(datas_nldi, "proxy")
 
-datas_g3 <- data.frame (id = datas$id, lat = datas$lat_g3, long = datas$long_g3, proxy = datas$gages3_proxy, ds = "gages3", state = datas$state, active = datas$active)
+datas_g3 <- data.frame (id = datas$id, lat = datas$lat_g3, long = datas$long_g3, proxy = datas$gages3_proxy, ds = "gages3", state = datas$state, active = datas$active, numid = datas$numid)
 datas_g3 <- classify_gages(datas_g3, "proxy")
 
-datas_nav <- data.frame (id = datas$id, lat = datas$lat_nav, long = datas$long_nav, proxy = datas$nav_proxy, ds = "SSNav", state = datas$state, active = datas$active)
+datas_nav <- data.frame (id = datas$id, lat = datas$lat_nav, long = datas$long_nav, proxy = datas$nav_proxy, ds = "SSNav", state = datas$state, active = datas$active, numid = datas$numid)
 datas_nav <- classify_gages(datas_nav, "proxy")
 
-datas_nwis <- data.frame (id = datas$id, lat = datas$lat_nwis, long = datas$long_nwis, proxy = datas$nwis_proxy, ds = "Nwis", state = datas$state, active = datas$active)
+datas_nwis <- data.frame (id = datas$id, lat = datas$lat_nwis, long = datas$long_nwis, proxy = datas$nwis_proxy, ds = "Nwis", state = datas$state, active = datas$active, numid = datas$numid)
 datas_nwis <- classify_gages(datas_nwis, "proxy")
 
-datas_nhd <- data.frame (id = datas$id, lat = datas$lat_nhd, long = datas$long_nhd, proxy = datas$nhd_proxy, ds = "Nhd", state = datas$state, active = datas$active)
+datas_nhd <- data.frame (id = datas$id, lat = datas$lat_nhd, long = datas$long_nhd, proxy = datas$nhd_proxy, ds = "Nhd", state = datas$state, active = datas$active, numid = datas$numid)
 datas_nhd <- classify_gages(datas_nhd, "proxy")
 
 datas <- rbind (datas_g3, datas_nav, datas_nwis, datas_nldi, datas_nhd)
@@ -98,6 +101,14 @@ ui <- bootstrapPage(
                 selectInput("colors", "Color Scheme",
                             rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
                 ),
+                br (),
+                searchInput(
+                  inputId = "search", label = "Enter site number ex 06306000",
+                  placeholder = "Site number",
+                  btnSearch = icon("search"),
+                  btnReset = icon("remove"),
+                  width = "250px"
+                ),
                 checkboxInput("legend", "Show legend", TRUE),
                 checkboxInput("activeGages", "Show only active gages", TRUE),
                 uiOutput ("url_description"),
@@ -108,13 +119,15 @@ ui <- bootstrapPage(
 )
 
 server <- function(input, output, session) {
+  datas_new <- reactiveValues()
+  datas_new$datas <- datas
   
   # Reactive expression for the data subsetted to what the user selected
   filteredData <- reactive({
     if (input$activeGages){
-      dat <- datas[which(datas$active == 1),] 
+      dat <- datas_new$datas[which(datas_new$datas$active == 1),] 
     } else {
-      dat <- datas
+      dat <- datas_new$datas
     }
     dat <- dat[dat$class >= input$lef & dat$class <= input$righ,]
     dat
@@ -158,6 +171,38 @@ server <- function(input, output, session) {
     }
   )
   
+  #Fitting to the state bounds
+  observeEvent(input$map_bounds, {
+    loc_ind <- (which (states$north > input$map_bounds$north & states$south < input$map_bounds$south & 
+                         states$east < input$map_bounds$east & states$west > input$map_bounds$west 
+    ))
+    
+    loc_out <- (which (states$north < input$map_bounds$north & states$south > input$map_bounds$south & 
+                         states$east < input$map_bounds$east & states$west > input$map_bounds$west 
+    ))
+    
+    
+    if (length(loc_out) >0){
+      datas_new$datas <- datas[which(datas$state %in% states$STUSPS[loc_out]),]
+    } else if (length (loc_ind) >0){
+      datas_new$datas <- datas[which(datas$state %in% states$STUSPS[loc_ind]),]
+    } else {
+      datas_new$datas <- datas
+    }
+  })
+  
+  # click event
+  observeEvent(input$map_marker_click, {
+    # click event
+    click <- input$map_marker_click
+    selectedStringId <- strsplit (click$id, "_")
+    selection <- datas_new$datas[which(datas_new$datas$numid %in% selectedStringId[[1]]),]
+    
+    leafletProxy(mapId = "map") %>%
+      clearPopups() %>%
+      addPopups(dat = click, lat = ~selection$lat, lng = ~selection$long, popup = selection$id)
+  })
+  
   # Incremental changes to the map (in this case, replacing the
   # circles when a new color is chosen) should be performed in
   # an observer. Each independent set of things that can change
@@ -167,9 +212,24 @@ server <- function(input, output, session) {
     leafletProxy("map", data = filteredData()) %>%
       clearMarkers() %>%
       addCircleMarkers(radius = ~10, weight = 1, color = "#777777", opacity = 0.5,
-                       fillColor = ~pal(ds), fillOpacity = 0.7, popup = ~paste(id)
+                       fillColor = ~pal(ds), fillOpacity = 0.7, layerId = filteredData()$id,
+                       popup = ~paste(id)
       )
   })
+  
+  
+  #search bar
+  observeEvent (input$search, {
+    search_id <- which (datas$numid == input$search)
+    if (length (search_id) > 1){
+      search_id <- search_id[1]
+    }
+    lat <-  (datas$lat[search_id])
+    long <-  (datas$long[search_id])
+    leafletProxy("map") %>%
+      setView(lng = long, lat = lat, zoom = 14)
+  })
+  
   
   # Use a separate observer to recreate the legend as needed.
   observe({
